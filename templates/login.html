@@ -1,69 +1,53 @@
 <!doctype html>
-<html lang="en">
+<html lang="id">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dining GuestHouse</title>
+    <title>Login - Sistem Identifikasi Dining</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-      body {
-        background: radial-gradient(circle, #1a202c 0%, #0f172a 100%);
-      }
-      .glass {
-        background: rgba(255, 255, 255, 0.05);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-      }
-    </style>
   </head>
-  <body class="flex items-center justify-center min-h-screen text-white">
-    <div class="glass p-8 rounded-2xl shadow-2xl w-96">
-      <div class="text-center mb-8">
-        <h1 class="text-3xl font-bold tracking-widest text-blue-400">
-          DINING GUESTHOUSE
-        </h1>
-        <p class="text-gray-400 text-sm">Security AI Recognition System</p>
-      </div>
+  <body class="bg-gray-100 flex items-center justify-center h-screen">
+    <div class="bg-white p-8 rounded-xl shadow-lg w-96">
+      <h2 class="text-2xl font-bold text-center mb-6 text-blue-600">
+        Login Sistem
+      </h2>
 
       {% with messages = get_flashed_messages() %} {% if messages %} {% for
       message in messages %}
-      <div
-        class="bg-red-500/20 border border-red-500 text-red-200 p-3 rounded mb-4 text-xs"
-      >
-        {{ message }}
-      </div>
+      <p class="text-red-500 text-sm mb-4 text-center">{{ message }}</p>
       {% endfor %} {% endif %} {% endwith %}
 
-      <form action="/login" method="POST" class="space-y-6">
-        <div>
-          <label
-            class="block text-xs uppercase tracking-wider text-gray-400 mb-2"
-            >Username</label
-          >
+      <form action="/login" method="POST">
+        <div class="mb-4">
+          <label class="block text-sm font-semibold mb-1">Username</label>
           <input
             type="text"
             name="username"
-            class="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 focus:outline-none focus:border-blue-500 transition"
+            class="w-full border rounded-lg p-2"
             required
           />
         </div>
-        <div>
-          <label
-            class="block text-xs uppercase tracking-wider text-gray-400 mb-2"
-            >Password</label
-          >
+        <div class="mb-4">
+          <label class="block text-sm font-semibold mb-1">Password</label>
           <input
             type="password"
             name="password"
-            class="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 focus:outline-none focus:border-blue-500 transition"
+            class="w-full border rounded-lg p-2"
             required
           />
         </div>
+        <div class="mb-6">
+          <label class="block text-sm font-semibold mb-1">Login Sebagai</label>
+          <select name="role" class="w-full border rounded-lg p-2 bg-white">
+            <option value="mahasiswa">Mahasiswa</option>
+            <option value="operator">Operator</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
         <button
           type="submit"
-          class="w-full bg-blue-600 hover:bg-blue-500 py-3 rounded-lg font-bold transition shadow-lg shadow-blue-500/20"
+          class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
         >
-          INITIALIZE ACCESS
+          Masuk
         </button>
       </form>
     </div>

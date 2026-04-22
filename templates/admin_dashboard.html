@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard Admin - Asrama GH</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  </head>
+  <body class="bg-slate-50 min-h-screen font-sans text-slate-900">
+    <nav class="bg-white border-b p-4 shadow-sm">
+      <div class="container mx-auto flex justify-between items-center">
+        <div class="flex items-center gap-2">
+          <div
+            class="w-8 h-8 bg-slate-800 rounded-lg flex items-center justify-center text-white font-bold"
+          >
+            A
+          </div>
+          <h1 class="text-xl font-bold text-slate-800">Dashboard Admin</h1>
+        </div>
+        <div class="flex gap-3">
+          <a
+            href="/logout"
+            class="bg-red-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-red-600 transition"
+            >Logout</a
+          >
+        </div>
+      </div>
+    </nav>
+
+    <main class="container mx-auto py-8 px-4">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+          <p class="text-slate-500 text-xs font-bold uppercase tracking-wider">
+            Total Mahasiswa
+          </p>
+          <h3 class="text-4xl font-bold text-slate-800">
+            {{ mahasiswa|length }}
+          </h3>
+        </div>
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+          <p class="text-blue-500 text-xs font-bold uppercase tracking-wider">
+            Status Asrama
+          </p>
+          <h3 class="text-4xl font-bold text-blue-600">
+            {{ mahasiswa|length }}
+          </h3>
+        </div>
+        <div
+          class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 opacity-40"
+        >
+          <p class="text-slate-400 text-xs font-bold uppercase tracking-wider">
+            Outsiders (Disabled)
+          </p>
+          <h3 class="text-4xl font-bold text-slate-300">0</h3>
+        </div>
+      </div>
+
+      <div
+        class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"
+      >
+        <div class="p-6 border-b flex justify-between items-center">
+          <h2 class="font-bold text-slate-800 text-lg">
+            Data Mahasiswa & Riwayat Dining
+          </h2>
+          <button
+            onclick="openModalAdd()"
+            class="bg-slate-900 text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-slate-800 transition"
+          >
+            + Tambah Mahasiswa
+          </button>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead
+              class="bg-slate-50 text-slate-500 text-[10px] uppercase tracking-[0.1em]"
+            >
+              <tr>
+                <th class="p-4 border-b font-bold">Nomor Registrasi</th>
+                <th class="p-4 border-b font-bold">Nama Mahasiswa</th>
+                <th class="p-4 border-b font-bold">Tempat Tinggal</th>
+                <th class="p-4 border-b font-bold text-center">Aksi</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              {% for m in mahasiswa %}
+              <tr class="hover:bg-slate-50/80 transition group">
+                <td class="p-4 text-slate-500 font-mono text-sm">
+                  {{ m.nomor_registrasi }}
+                </td>
+                <td class="p-4">
+                  <a
+                    href="{{ url_for('admin_view_profile', mahasiswa_id=m.id) }}"
+                    class="flex items-center gap-3 group"
+                  >
+                    <div
+                      class="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 overflow-hidden flex-shrink-0"
+                    >
+                      <img
+                        src="{{ url_for('static', filename='profiles/' + m.foto_path) if m.foto_path else 'https://ui-avatars.com/api/?name=' + m.nama_lengkap }}"
+                        class="w-full h-full object-cover"
+                      />
+                    </div>
+                    <span class="text-blue-600 font-bold group-hover:underline"
+                      >{{ m.nama_lengkap }}</span
+                    >
+                  </a>
+                </td>
+                <td class="p-4">
+                  <span
+                    class="bg-blue-50 text-blue-600 px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wide border border-blue-100"
+                  >
+                    {{ m.status }}
+                  </span>
+                </td>
+                <td class="p-4 text-center">
+                  <a
+                    href="{{ url_for('delete_mahasiswa', id=m.id) }}"
+                    onclick="return confirm('Hapus data {{ m.nama_lengkap }}?')"
+                    class="text-red-400 hover:text-red-600 text-sm font-medium transition"
+                  >
+                    Hapus
+                  </a>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+
+    <div
+      id="modalAdd"
+      class="fixed inset-0 bg-slate-900/60 hidden flex items-center justify-center p-4 z-50 backdrop-blur-sm"
+    >
+      <div
+        class="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all"
+      >
+        <div class="p-6 border-b bg-slate-50">
+          <h3 class="font-bold text-lg text-slate-800">
+            Registrasi Mahasiswa Baru
+          </h3>
+        </div>
+        <form
+          action="{{ url_for('add_mahasiswa') }}"
+          method="POST"
+          class="p-6 space-y-4"
+        >
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase mb-1"
+              >Nomor Registrasi</label
+            >
+            <input
+              type="text"
+              name="nomor_registrasi"
+              required
+              placeholder="Contoh: 12510392"
+              class="w-full border border-slate-200 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase mb-1"
+              >Nama Lengkap</label
+            >
+            <input
+              type="text"
+              name="nama_lengkap"
+              required
+              placeholder="Nama Mahasiswa"
+              class="w-full border border-slate-200 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition"
+            />
+          </div>
+          <div class="flex gap-3 mt-8">
+            <button
+              type="button"
+              onclick="closeModalAdd()"
+              class="flex-1 bg-slate-100 text-slate-600 py-3 rounded-lg font-bold text-sm hover:bg-slate-200 transition"
+            >
+              Batal
+            </button>
+            <button
+              type="submit"
+              class="flex-1 bg-blue-600 text-white py-3 rounded-lg font-bold text-sm hover:bg-blue-700 shadow-lg shadow-blue-200 transition"
+            >
+              Daftarkan
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      function openModalAdd() {
+        $("#modalAdd").removeClass("hidden").addClass("flex");
+      }
+      function closeModalAdd() {
+        $("#modalAdd").addClass("hidden").removeClass("flex");
+      }
+
+      window.onclick = function (event) {
+        if (event.target == document.getElementById("modalAdd")) {
+          closeModalAdd();
+        }
+      };
+    </script>
+  </body>
+</html>

@@ -1,273 +1,111 @@
 <!doctype html>
-<html lang="en">
+<html lang="id">
   <head>
     <meta charset="UTF-8" />
-    <title>Live Monitor - GH AI</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Monitor Operator - Asrama GH</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-    />
-    <style>
-      body {
-        background-color: #020617;
-        color: white;
-      }
-      .glass-panel {
-        background: rgba(15, 23, 42, 0.7);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(51, 65, 85, 0.5);
-      }
-    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   </head>
-  <body class="h-screen overflow-hidden flex">
-    <aside
-      class="w-80 bg-slate-900 border-r border-slate-800 p-6 flex flex-col"
-    >
-      <div class="mb-10 text-blue-500 font-black text-2xl uppercase italic">
-        GH Monitor
-      </div>
-
-      <div class="flex-1 space-y-6">
-        <button
-          onclick="document.getElementById('imageInput').click()"
-          class="w-full bg-blue-600 hover:bg-blue-500 p-4 rounded-2xl font-bold flex items-center justify-center gap-3 transition"
-        >
-          <i class="fas fa-upload"></i> Upload Foto
-        </button>
-        <input
-          type="file"
-          id="imageInput"
-          class="hidden"
-          onchange="uploadImage()"
-        />
-
-        <div id="resultBox" class="hidden">
-          <p class="text-[10px] text-slate-500 uppercase tracking-widest mb-4">
-            Hasil Deteksi
-          </p>
-          <div id="detectionList" class="space-y-3"></div>
-        </div>
-      </div>
-
-      <a
-        href="/dashboard"
-        class="text-slate-500 text-xs hover:text-white transition"
-        ><i class="fas fa-arrow-left mr-2"></i> Dashboard</a
-      >
-    </aside>
-
-    <main class="flex-1 p-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <section class="flex flex-col">
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="text-xs font-bold uppercase tracking-widest">Live Feed</h2>
-          <button
-            onclick="toggleCam()"
-            id="camBtn"
-            class="px-4 py-1.5 rounded-full bg-slate-800 border border-slate-700 text-[10px] font-bold uppercase"
-          >
-            <i id="camIcon" class="fas fa-video mr-2"></i>
-            <span id="camText">Stop Camera</span>
-          </button>
-        </div>
-        <div
-          class="bg-black rounded-3xl overflow-hidden border-2 border-blue-500/20 flex-1 flex items-center justify-center"
-        >
-          <img
-            id="videoStream"
-            src="{{ url_for('video_feed') }}"
-            class="w-full h-full object-cover"
-          />
-        </div>
-      </section>
-
-      <section class="flex flex-col">
-        <h2
-          class="text-xs font-bold uppercase tracking-widest mb-4 text-blue-400"
-        >
-          Static Analysis
-        </h2>
-        <div
-          id="imageDisplay"
-          class="bg-slate-950 rounded-3xl border border-slate-800 flex-1 flex items-center justify-center overflow-hidden"
-        >
-          <p class="text-slate-700 italic text-sm">Menunggu upload...</p>
-        </div>
-      </section>
-    </main>
-
-    <script>
-      async function toggleCam() {
-        const res = await fetch("/toggle_camera", { method: "POST" });
-        const data = await res.json();
-        const btn = document.getElementById("camBtn");
-        const text = document.getElementById("camText");
-        const icon = document.getElementById("camIcon");
-
-        if (data.active) {
-          btn.className =
-            "px-4 py-1.5 rounded-full bg-slate-800 border border-slate-700 text-[10px] font-bold uppercase";
-          text.innerText = "Stop Camera";
-          icon.className = "fas fa-video mr-2";
-        } else {
-          btn.className =
-            "px-4 py-1.5 rounded-full bg-red-900 border border-red-500 text-[10px] font-bold uppercase";
-          text.innerText = "Start Camera";
-          icon.className = "fas fa-video-slash mr-2";
-        }
-      }
-
-      async function uploadImage() {
-        const file = document.getElementById("imageInput").files[0];
-        const formData = new FormData();
-        formData.append("file", file);
-
-        const display = document.getElementById("imageDisplay");
-        display.innerHTML =
-          '<div class="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full"></div>';
-
-        const res = await fetch("/upload_image", {
-          method: "POST",
-          body: formData,
-        });
-        const data = await res.json();
-
-        if (data.success) {
-          display.innerHTML = `<img src="${data.image}" class="max-w-full max-h-full object-contain">`;
-          document.getElementById("resultBox").classList.remove("hidden");
-          document.getElementById("detectionList").innerHTML = data.detections
-            .map(
-              (d) => `
-                    <div class="p-4 bg-slate-800 rounded-2xl border-l-4 border-green-500">
-                        <p class="font-bold">${d.nama}</p>
-                        <p class="text-[10px] text-slate-500">Confidence: ${(d.confidence * 100).toFixed(1)}%</p>
-                    </div>
-                `,
-            )
-            .join("");
-        }
-      }
-    </script>
-    <div
-      id="alertBox"
-      class="hidden fixed top-10 left-1/2 -translate-x-1/2 z-50 animate-bounce"
-    >
+  <body class="bg-gray-100 font-sans">
+    <div class="container mx-auto p-6">
       <div
-        class="bg-red-600 text-white px-8 py-4 rounded-2xl shadow-[0_0_30px_rgba(220,38,38,0.5)] border-2 border-white flex items-center gap-4"
+        class="flex justify-between items-center bg-white p-4 rounded-lg shadow mb-6"
       >
-        <i class="fas fa-exclamation-triangle text-2xl animate-pulse"></i>
-        <div>
-          <p class="font-black tracking-tighter text-lg uppercase">
-            Security Alert!
-          </p>
-          <p class="text-xs font-bold opacity-80 uppercase tracking-widest">
-            Wajah tidak dikenal terdeteksi!
-          </p>
+        <h1 class="text-2xl font-bold text-gray-800">
+          Sistem Monitoring Asrama
+        </h1>
+        <div class="space-x-2">
+          <button
+            id="camBtn"
+            onclick="toggleKamera()"
+            class="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700"
+          >
+            Aktifkan Kamera
+          </button>
+          <a
+            href="/logout"
+            class="bg-red-500 text-white px-4 py-2 rounded shadow hover:bg-red-600"
+            >Logout</a
+          >
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 bg-white p-4 rounded-lg shadow">
+          <h2 class="text-lg font-semibold mb-4 text-gray-700">
+            Live Camera Feed
+          </h2>
+          <div
+            class="relative bg-black rounded-lg overflow-hidden aspect-video border-4 border-gray-200"
+          >
+            <img
+              id="videoFeed"
+              src="{{ url_for('video_feed') }}"
+              class="w-full h-full object-contain"
+            />
+          </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-lg shadow">
+          <h2 class="text-lg font-semibold mb-4 text-gray-700 border-b pb-2">
+            Riwayat Deteksi Terkini
+          </h2>
+
+          <div id="log-list" class="space-y-3 h-[450px] overflow-y-auto pr-2">
+            {% for item in history %}
+            <div
+              class="flex justify-between items-center p-3 rounded-lg border-l-4 {{ 'bg-green-50 border-green-500' if item.status == 'ASRAMA' else 'bg-red-50 border-red-500' }}"
+            >
+              <div>
+                <p
+                  class="font-bold {{ 'text-green-700' if item.status == 'ASRAMA' else 'text-red-700' }}"
+                >
+                  {{ item.nama }}
+                </p>
+                <p class="text-xs text-gray-500">{{ item.waktu }}</p>
+              </div>
+              <span
+                class="text-xs font-semibold px-2 py-1 rounded {{ 'bg-green-200 text-green-800' if item.status == 'ASRAMA' else 'bg-red-200 text-red-800' }}"
+              >
+                {{ item.status }}
+              </span>
+            </div>
+            {% endfor %} {% if not history %}
+            <p class="text-center text-gray-400 mt-10">Belum ada deteksi...</p>
+            {% endif %}
+          </div>
         </div>
       </div>
     </div>
 
-    <audio id="alertSound" preload="auto" loop>
-      <source
-        src="https://actions.google.com/sounds/v1/alarms/industrial_alarm_loop.ogg"
-        type="audio/ogg"
-      />
-    </audio>
-
     <script>
-      let isAlerting = false;
-      let audioCtx = null;
-      let oscillator = null;
-
-      // Fungsi untuk membuat suara alarm sintetis (pasti bunyi)
-      function startAlarmSound() {
-        if (!audioCtx)
-          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
-        if (oscillator) return;
-
-        oscillator = audioCtx.createOscillator();
-        const gainNode = audioCtx.createGain();
-
-        oscillator.type = "square";
-        oscillator.frequency.setValueAtTime(880, audioCtx.currentTime);
-        const volumeLevel = 0.1;
-
-        gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(
-          volumeLevel,
-          audioCtx.currentTime + 0.1,
-        );
-
-        oscillator.connect(gainNode);
-        gainNode.connect(audioCtx.destination);
-
-        oscillator.start();
-
-        // Efek sirine tetap sama
-        let rising = true;
-        setInterval(() => {
-          if (!oscillator) return;
-          if (rising) {
-            oscillator.frequency.exponentialRampToValueAtTime(
-              1200,
-              audioCtx.currentTime + 0.5,
-            );
-          } else {
-            oscillator.frequency.exponentialRampToValueAtTime(
-              800,
-              audioCtx.currentTime + 0.5,
-            );
-          }
-          rising = !rising;
-        }, 500);
-      }
-
-      function stopAlarmSound() {
-        if (oscillator) {
-          oscillator.stop();
-          oscillator.disconnect();
-          oscillator = null;
-        }
-      }
-
-      // Pancing izin audio saat pertama kali klik di mana saja
-      document.addEventListener(
-        "click",
-        function () {
-          if (!audioCtx)
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-          if (audioCtx.state === "suspended") audioCtx.resume();
-          console.log("Audio System Activated");
-        },
-        { once: true },
-      );
-
-      async function monitorAlerts() {
-        try {
-          const res = await fetch("/check_alert");
-          const data = await res.json();
-          const alertEl = document.getElementById("alertBox");
-
-          if (data.alert) {
-            if (!isAlerting) {
-              alertEl.classList.remove("hidden");
-              startAlarmSound(); // Jalankan suara sintetis
-              isAlerting = true;
+      // Fungsi On/Off Kamera
+      function toggleKamera() {
+        fetch("/toggle_camera", { method: "POST" })
+          .then((response) => response.json())
+          .then((data) => {
+            const btn = document.getElementById("camBtn");
+            if (data.active) {
+              btn.innerText = "Matikan Kamera";
+              btn.classList.replace("bg-blue-600", "bg-red-600");
+            } else {
+              btn.innerText = "Aktifkan Kamera";
+              btn.classList.replace("bg-red-600", "bg-blue-600");
             }
-          } else {
-            if (isAlerting) {
-              alertEl.classList.add("hidden");
-              stopAlarmSound(); // Matikan suara sintetis
-              isAlerting = false;
-            }
-          }
-        } catch (e) {
-          console.log("Gagal mengecek status alert");
-        }
+            // Paksa refresh feed gambar
+            document.getElementById("videoFeed").src =
+              "{{ url_for('video_feed') }}?" + new Date().getTime();
+          });
       }
 
-      setInterval(monitorAlerts, 1000);
+      // Auto Refresh riwayat setiap 3 detik
+      function refreshRiwayat() {
+        // Memuat ulang hanya bagian log-list saja
+        $("#log-list").load(window.location.href + " #log-list");
+      }
+
+      setInterval(refreshRiwayat, 10000);
     </script>
   </body>
 </html>
