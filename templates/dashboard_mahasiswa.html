@@ -1,225 +1,135 @@
 <!doctype html>
-<html lang="id">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Profil Mahasiswa - Asrama GH</title>
+    <title>Dashboard Mahasiswa</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap"
       rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
     />
+    <style>
+      body {
+        font-family: "Plus Jakarta Sans", sans-serif;
+      }
+    </style>
   </head>
-  <body class="bg-slate-50 min-h-screen font-sans text-slate-900">
-    <nav class="bg-white border-b p-4 shadow-sm">
-      <div class="container mx-auto flex justify-between items-center">
-        <h1 class="text-xl font-bold text-slate-800">
-          Portal Mahasiswa Asrama GH
-        </h1>
-        {% if is_admin_view %}
-        <a
-          href="/admin/dashboard"
-          class="bg-slate-600 text-white px-4 py-2 rounded-lg text-sm"
-          >Kembali ke Admin</a
-        >
-        {% else %}
-        <a
-          href="/logout"
-          class="bg-red-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-red-600 transition"
-          >Logout</a
-        >
-        {% endif %}
-      </div>
+  <body class="bg-slate-50">
+    <nav
+      class="bg-indigo-600 p-4 px-10 flex justify-between items-center shadow-lg shadow-indigo-100 sticky top-0 z-50"
+    >
+      <h1 class="text-white font-black tracking-tight text-xl">
+        Portal <span class="text-indigo-200">Mahasiswa</span>
+      </h1>
+      <a
+        href="/logout"
+        class="bg-white/10 text-white px-5 py-2 rounded-xl font-bold hover:bg-white/20 transition-all"
+        >Logout</a
+      >
     </nav>
 
-    <main class="container mx-auto py-8 px-4">
-      {% if user %}
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div class="space-y-6">
-          <div class="bg-white rounded-xl shadow-sm p-6 text-center border">
-            <div class="relative w-32 h-32 mx-auto mb-4">
-              <img
-                id="profile-img"
-                src="{{ url_for('static', filename='profiles/' + user.foto_path) if user.foto_path else 'https://ui-avatars.com/api/?name=' + user.nama }}"
-                class="w-full h-full rounded-full object-cover border-4 border-slate-100 shadow-sm"
-              />
-            </div>
-            <h2 class="text-xl font-bold text-slate-800">{{ user.nama }}</h2>
-            <p class="text-slate-500 text-sm mb-4">
-              No. Registrasi: {{ user.username }}
-            </p>
-            <span
-              class="bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full uppercase"
-            >
-              {{ user.role if user.role else 'MAHASISWA' }}
-            </span>
-          </div>
-
-          <div class="bg-white rounded-xl shadow-sm p-6 border text-sm">
-            <h3 class="font-bold text-slate-700 mb-4 uppercase tracking-wider">
-              Tata Cara Ambil Gambar
-            </h3>
-            <ul class="space-y-3 text-slate-600">
-              <li class="flex gap-2">
-                <span class="text-blue-500 font-bold">1.</span> Wajah tegak
-                lurus ke depan.
-              </li>
-              <li class="flex gap-2">
-                <span class="text-blue-500 font-bold">2.</span> Pastikan cahaya
-                terang di depan wajah.
-              </li>
-              <li class="flex gap-2">
-                <span class="text-blue-500 font-bold">3.</span> Hindari kacamata
-                hitam atau topi.
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        <div class="lg:col-span-2 space-y-6">
-          {% if not is_admin_view %}
-          <div class="bg-white rounded-xl shadow-sm p-6 border">
-            <h3 class="font-bold text-slate-700 mb-4">
-              Pembaruan Wajah Profil
-            </h3>
-            <div
-              class="relative bg-black rounded-lg overflow-hidden aspect-video mb-4 border-4 border-slate-200"
-            >
-              <video
-                id="webcam"
-                class="w-full h-full object-cover"
-                autoplay
-              ></video>
-              <div
-                class="absolute inset-0 border-[30px] border-black/40 pointer-events-none"
-              >
-                <div
-                  class="w-full h-full border-2 border-dashed border-white/50 rounded"
-                ></div>
-              </div>
-            </div>
-
-            <button
-              onclick="takeSnapshot()"
-              class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition flex justify-center items-center gap-2"
-            >
-              <i class="fas fa-camera"></i>
-              {% if user.foto_path %}
-              <span>Perbarui Foto Profil</span>
-              {% else %}
-              <span>Ambil & Simpan Foto Profil</span>
-              {% endif %}
-            </button>
-          </div>
-          {% endif %}
-
-          <div class="bg-white rounded-xl shadow-sm p-6 border">
-            <h3 class="font-bold text-slate-700 mb-4">
-              Riwayat Dining Terakhir
-            </h3>
-            <div class="overflow-hidden rounded-lg border border-slate-100">
-              <table class="w-full text-left">
-                <thead class="bg-slate-50">
-                  <tr
-                    class="text-slate-500 text-xs uppercase tracking-wider border-b"
-                  >
-                    <th class="p-4">Tanggal & Jam</th>
-                    <th class="p-4">Sesi Makan</th>
-                    <th class="p-4 text-center">Status</th>
-                  </tr>
-                </thead>
-                <tbody
-                  id="history-body"
-                  class="divide-y divide-slate-50 text-sm"
-                >
-                  {% for row in history %}
-                  <tr>
-                    <td class="p-4 font-medium text-slate-700">
-                      {{ row.waktu }}
-                    </td>
-                    <td class="p-4">
-                      {% set h = row.waktu.hour if row.waktu.hour is defined
-                      else 0 %} {% if 6 <= h < 11 %}
-                      <span class="text-orange-600 font-bold">PAGI</span>
-                      {% elif 11 <= h < 15 %}
-                      <span class="text-blue-600 font-bold">SIANG</span>
-                      {% elif 17 <= h < 21 %}
-                      <span class="text-purple-600 font-bold">MALAM</span>
-                      {% else %}
-                      <span class="text-slate-400">EXTENDED</span>
-                      {% endif %}
-                    </td>
-                    <td class="p-4 text-center">
-                      <span
-                        class="bg-green-100 text-green-700 px-2 py-1 rounded text-[10px] font-bold border border-green-200"
-                        >TERDETEKSI</span
-                      >
-                    </td>
-                  </tr>
-                  {% else %}
-                  <tr>
-                    <td
-                      colspan="3"
-                      class="p-8 text-center text-slate-400 italic"
-                    >
-                      Belum ada riwayat tercatat di dining hall.
-                    </td>
-                  </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-      {% else %}
-      <div class="text-center py-20">
-        <h2 class="text-2xl font-bold text-slate-400">
-          Data User Tidak Ditemukan
-        </h2>
-        <p class="mb-4">Silakan login kembali.</p>
-        <a href="/logout" class="bg-blue-600 text-white px-6 py-2 rounded-lg"
-          >Ke Halaman Login</a
+    <div class="p-10 max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div class="lg:col-span-1 space-y-6">
+        <div
+          class="bg-white p-8 rounded-[3rem] shadow-sm border border-slate-100 flex flex-col items-center text-center"
         >
+          <div
+            class="w-32 h-32 bg-slate-100 rounded-[2.5rem] mb-6 overflow-hidden border-4 border-white shadow-xl flex items-center justify-center"
+          >
+            {% if user.foto_path %}
+            <img
+              src="{{ url_for('static', filename='uploads/' + user.foto_path) }}"
+              class="w-full h-full object-cover"
+            />
+            {% else %}
+            <span class="text-5xl text-indigo-600 font-black"
+              >{{ user.nama_lengkap[0] }}</span
+            >
+            {% endif %}
+          </div>
+          <h2 class="text-2xl font-black text-slate-800 leading-tight">
+            {{ user.nama_lengkap }}
+          </h2>
+          <p class="text-indigo-600 font-mono font-bold mt-1">
+            {{ user.nomor_registrasi }}
+          </p>
+          <div
+            class="mt-6 px-6 py-2 bg-indigo-50 text-indigo-700 rounded-2xl text-xs font-black uppercase tracking-widest"
+          >
+            {{ user.status }}
+          </div>
+        </div>
       </div>
-      {% endif %}
-    </main>
 
-    <script>
-      const video = document.getElementById("webcam");
-      if (video) {
-        navigator.mediaDevices
-          .getUserMedia({ video: true })
-          .then((stream) => {
-            video.srcObject = stream;
-          })
-          .catch((err) => {
-            console.error("Gagal akses kamera: ", err);
-          });
-      }
+      <div class="lg:col-span-2 space-y-8">
+        {% if not is_admin_view %}
+        <div
+          class="bg-white p-8 rounded-[3rem] shadow-sm border border-slate-100"
+        >
+          <h3 class="font-bold text-lg mb-6 flex items-center gap-3">
+            <span class="w-2 h-6 bg-indigo-600 rounded-full"></span>
+            Update Profil Wajah
+          </h3>
+          <div
+            class="bg-slate-50 p-8 rounded-[2rem] border-2 border-dashed border-slate-200 text-center"
+          >
+            <p class="text-slate-400 mb-6 text-sm">
+              Gunakan foto terbaru dengan pencahayaan yang jelas.
+            </p>
+            <form
+              action="/mahasiswa/upload_face"
+              method="POST"
+              enctype="multipart/form-data"
+              class="flex flex-col items-center"
+            >
+              <input
+                type="file"
+                name="file"
+                class="mb-6 text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-indigo-50 file:text-indigo-600 hover:file:bg-indigo-100 cursor-pointer"
+              />
+              <button
+                type="submit"
+                class="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all"
+              >
+                UPLOAD FOTO SEKARANG
+              </button>
+            </form>
+          </div>
+        </div>
+        {% endif %}
 
-      function takeSnapshot() {
-        const canvas = document.createElement("canvas");
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        canvas.getContext("2d").drawImage(video, 0, 0);
-        const imageData = canvas.toDataURL("image/jpeg");
-
-        fetch("/save_face_capture", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ image: imageData }),
-        }).then((res) => {
-          if (res.ok) window.location.reload();
-        });
-      }
-
-      // Auto Refresh riwayat setiap 5 detik
-      setInterval(() => {
-        if ($("#history-body").length) {
-          $("#history-body").load(window.location.href + " #history-body tr");
-        }
-      }, 5000);
-    </script>
+        <div
+          class="bg-white p-8 rounded-[3rem] shadow-sm border border-slate-100"
+        >
+          <h3 class="font-bold text-lg mb-6 flex items-center gap-3">
+            <span class="w-2 h-6 bg-indigo-600 rounded-full"></span>
+            Riwayat Akses Dining
+          </h3>
+          <div class="space-y-3">
+            {% for h in history %}
+            <div
+              class="flex justify-between items-center p-5 bg-slate-50 rounded-2xl border border-slate-100"
+            >
+              <div class="flex items-center gap-4">
+                <div
+                  class="w-3 h-3 bg-green-500 rounded-full shadow-lg shadow-green-200 animate-pulse"
+                ></div>
+                <span class="font-bold text-slate-700">Akses Diterima</span>
+              </div>
+              <span class="text-slate-400 font-mono text-sm"
+                >{{ h.waktu }}</span
+              >
+            </div>
+            {% else %}
+            <div class="text-center py-10">
+              <p class="text-slate-300 italic font-medium">
+                Belum ada riwayat aktivitas.
+              </p>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
   </body>
 </html>

@@ -2,110 +2,268 @@
 <html lang="id">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Monitor Operator - Asrama GH</title>
+    <title>Operator Monitor - Live System</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Plus Jakarta Sans", sans-serif;
+      }
+      .glow-red {
+        box-shadow: 0 0 30px rgba(239, 68, 68, 0.4);
+      }
+      .video-container {
+        aspect-ratio: 16 / 9;
+      }
+    </style>
   </head>
-  <body class="bg-gray-100 font-sans">
-    <div class="container mx-auto p-6">
-      <div
-        class="flex justify-between items-center bg-white p-4 rounded-lg shadow mb-6"
-      >
-        <h1 class="text-2xl font-bold text-gray-800">
-          Sistem Monitoring Asrama
-        </h1>
-        <div class="space-x-2">
-          <button
-            id="camBtn"
-            onclick="toggleKamera()"
-            class="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700"
+  <body
+    class="bg-slate-50 text-slate-800 overflow-hidden h-screen flex flex-col"
+  >
+    <nav
+      class="bg-white/80 backdrop-blur-md border-b border-slate-100 px-8 py-4 flex justify-between items-center shrink-0"
+    >
+      <div class="flex items-center gap-3">
+        <div
+          class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-bold shadow-lg shadow-indigo-100"
+        >
+          O
+        </div>
+        <div>
+          <h1 class="text-lg font-black tracking-tight leading-none">
+            Operator <span class="text-indigo-600">Monitor</span>
+          </h1>
+          <p
+            class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1"
           >
-            Aktifkan Kamera
-          </button>
-          <a
-            href="/logout"
-            class="bg-red-500 text-white px-4 py-2 rounded shadow hover:bg-red-600"
-            >Logout</a
+            Live Identification System
+          </p>
+        </div>
+      </div>
+      <div class="flex items-center gap-4">
+        <div class="flex items-center gap-2 px-4 py-2 bg-green-50 rounded-xl">
+          <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+          <span class="text-xs font-bold text-green-600">Sistem Aktif</span>
+        </div>
+        <a
+          href="/logout"
+          class="px-5 py-2.5 bg-red-50 text-red-600 rounded-xl font-bold hover:bg-red-600 hover:text-white transition-all text-sm"
+          >Logout</a
+        >
+      </div>
+    </nav>
+
+    <div class="flex-1 flex overflow-hidden p-6 gap-6">
+      <div class="flex-1 flex flex-col gap-6">
+        <div
+          class="relative flex-1 bg-slate-900 rounded-[2.5rem] overflow-hidden shadow-2xl shadow-slate-200 border-4 border-white"
+        >
+          <img
+            src="{{ url_for('video_feed') }}"
+            class="w-full h-full object-cover"
+          />
+
+          <div
+            id="strangerAlert"
+            class="hidden absolute inset-0 bg-red-600/20 backdrop-blur-sm flex items-center justify-center animate-pulse"
           >
+            <div
+              class="bg-white p-8 rounded-[2rem] text-center shadow-2xl glow-red"
+            >
+              <div
+                class="text-5xl mb-4 text-red-600 uppercase font-black italic"
+              >
+                Stranger!
+              </div>
+              <p class="text-slate-600 font-bold">
+                Wajah tidak dikenal terdeteksi!
+              </p>
+            </div>
+          </div>
+
+          <div class="absolute bottom-8 left-8">
+            <button
+              onclick="toggleCamera()"
+              id="btnCam"
+              class="bg-indigo-600 text-white px-8 py-4 rounded-2xl font-bold shadow-xl hover:scale-105 transition-all"
+            >
+              Matikan Kamera
+            </button>
+          </div>
         </div>
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div class="lg:col-span-2 bg-white p-4 rounded-lg shadow">
-          <h2 class="text-lg font-semibold mb-4 text-gray-700">
-            Live Camera Feed
-          </h2>
-          <div
-            class="relative bg-black rounded-lg overflow-hidden aspect-video border-4 border-gray-200"
+      <div class="w-96 flex flex-col gap-6 overflow-y-auto pr-2">
+        <div
+          class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 shrink-0"
+        >
+          <h3
+            class="text-xs font-black text-slate-400 uppercase tracking-widest mb-6"
           >
-            <img
-              id="videoFeed"
-              src="{{ url_for('video_feed') }}"
-              class="w-full h-full object-contain"
-            />
+            Hasil Identifikasi
+          </h3>
+
+          <div class="flex flex-col items-center text-center">
+            <div
+              class="w-32 h-32 bg-slate-50 rounded-[2rem] mb-6 flex items-center justify-center border-2 border-slate-100"
+            >
+              <span id="initialName" class="text-5xl font-black text-indigo-600"
+                >-</span
+              >
+            </div>
+            <h2
+              id="resNama"
+              class="text-2xl font-black text-slate-800 leading-tight"
+            >
+              -
+            </h2>
+            <p
+              id="resNIM"
+              class="text-indigo-600 font-mono font-bold mt-1 text-sm"
+            >
+              -
+            </p>
+            <div
+              id="resStatusBadge"
+              class="mt-4 px-4 py-1.5 bg-slate-100 text-slate-500 rounded-xl text-[10px] font-black uppercase tracking-widest"
+            >
+              Menunggu...
+            </div>
           </div>
         </div>
 
-        <div class="bg-white p-4 rounded-lg shadow">
-          <h2 class="text-lg font-semibold mb-4 text-gray-700 border-b pb-2">
-            Riwayat Deteksi Terkini
-          </h2>
-
-          <div id="log-list" class="space-y-3 h-[450px] overflow-y-auto pr-2">
-            {% for item in history %}
-            <div
-              class="flex justify-between items-center p-3 rounded-lg border-l-4 {{ 'bg-green-50 border-green-500' if item.status == 'ASRAMA' else 'bg-red-50 border-red-500' }}"
+        <div
+          class="bg-indigo-600 p-8 rounded-[2.5rem] shadow-xl shadow-indigo-100 text-white shrink-0"
+        >
+          <div class="flex justify-between items-center mb-4">
+            <span
+              class="text-[10px] font-black uppercase tracking-widest text-indigo-200"
+              >Sesi Kehadiran</span
             >
-              <div>
-                <p
-                  class="font-bold {{ 'text-green-700' if item.status == 'ASRAMA' else 'text-red-700' }}"
-                >
-                  {{ item.nama }}
-                </p>
-                <p class="text-xs text-gray-500">{{ item.waktu }}</p>
-              </div>
-              <span
-                class="text-xs font-semibold px-2 py-1 rounded {{ 'bg-green-200 text-green-800' if item.status == 'ASRAMA' else 'bg-red-200 text-red-800' }}"
-              >
-                {{ item.status }}
-              </span>
-            </div>
-            {% endfor %} {% if not history %}
-            <p class="text-center text-gray-400 mt-10">Belum ada deteksi...</p>
-            {% endif %}
+            <span class="p-2 bg-white/20 rounded-lg">📊</span>
           </div>
+          <div class="flex items-baseline gap-2">
+            <h4 id="statHadir" class="text-5xl font-black">0</h4>
+            <span class="text-indigo-200 font-bold">Mahasiswa</span>
+          </div>
+          <p class="text-xs text-indigo-100 mt-2 font-medium">
+            Teridentifikasi hari ini
+          </p>
         </div>
       </div>
     </div>
 
     <script>
-      // Fungsi On/Off Kamera
-      function toggleKamera() {
-        fetch("/toggle_camera", { method: "POST" })
-          .then((response) => response.json())
-          .then((data) => {
-            const btn = document.getElementById("camBtn");
-            if (data.active) {
-              btn.innerText = "Matikan Kamera";
-              btn.classList.replace("bg-blue-600", "bg-red-600");
-            } else {
-              btn.innerText = "Aktifkan Kamera";
-              btn.classList.replace("bg-red-600", "bg-blue-600");
+      let isAlerting = false;
+      let audioCtx = null;
+      let oscillator = null;
+      let gainNode = null;
+
+      function startAlarmSound() {
+        if (!audioCtx)
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (oscillator) return;
+        oscillator = audioCtx.createOscillator();
+        gainNode = audioCtx.createGain();
+        oscillator.type = "square";
+        oscillator.frequency.setValueAtTime(880, audioCtx.currentTime);
+
+        gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        oscillator.start();
+
+        let rising = true;
+        this.sirenInterval = setInterval(() => {
+          if (!oscillator) return;
+          oscillator.frequency.exponentialRampToValueAtTime(
+            rising ? 1200 : 800,
+            audioCtx.currentTime + 0.4,
+          );
+          rising = !rising;
+        }, 500);
+      }
+
+      function stopAlarmSound() {
+        if (oscillator) {
+          oscillator.stop();
+          oscillator.disconnect();
+          oscillator = null;
+          clearInterval(this.sirenInterval);
+        }
+      }
+
+      document.addEventListener(
+        "click",
+        () => {
+          if (!audioCtx)
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          if (audioCtx.state === "suspended") audioCtx.resume();
+        },
+        { once: true },
+      );
+
+      async function monitorSystem() {
+        try {
+          const res = await fetch("/get_status");
+          const data = await res.json();
+
+          const alertEl = document.getElementById("strangerAlert");
+          const resNama = document.getElementById("resNama");
+          const badge = document.getElementById("resStatusBadge");
+          const initial = document.getElementById("initialName");
+
+          resNama.innerText = data.nama;
+          document.getElementById("resNIM").innerText =
+            data.nim !== "-" ? "NIM: " + data.nim : "-";
+          document.getElementById("statHadir").innerText = data.count_sesi;
+          initial.innerText = data.nama !== "-" ? data.nama[0] : "-";
+
+          if (data.status === "ASRAMA") {
+            badge.innerText = "Mahasiswa Asrama";
+            badge.className =
+              "mt-4 px-4 py-1.5 bg-green-100 text-green-600 rounded-xl text-[10px] font-black uppercase tracking-widest";
+          } else {
+            badge.innerText = data.status === "-" ? "Menunggu..." : data.status;
+            badge.className =
+              "mt-4 px-4 py-1.5 bg-slate-100 text-slate-500 rounded-xl text-[10px] font-black uppercase tracking-widest";
+          }
+
+          if (data.is_stranger) {
+            if (!isAlerting) {
+              alertEl.classList.remove("hidden");
+              startAlarmSound();
+              isAlerting = true;
             }
-            // Paksa refresh feed gambar
-            document.getElementById("videoFeed").src =
-              "{{ url_for('video_feed') }}?" + new Date().getTime();
+          } else {
+            if (isAlerting) {
+              alertEl.classList.add("hidden");
+              stopAlarmSound();
+              isAlerting = false;
+            }
+          }
+        } catch (e) {
+          console.error("Server Down");
+        }
+      }
+
+      setInterval(monitorSystem, 1000);
+
+      function toggleCamera() {
+        fetch("/toggle_camera", { method: "POST" })
+          .then((res) => res.json())
+          .then((data) => {
+            const btn = document.getElementById("btnCam");
+            btn.innerText = data.active ? "Matikan Kamera" : "Aktifkan Kamera";
+            btn.className = data.active
+              ? "bg-indigo-600 text-white px-8 py-4 rounded-2xl font-bold shadow-xl hover:scale-105 transition-all"
+              : "bg-red-600 text-white px-8 py-4 rounded-2xl font-bold shadow-xl hover:scale-105 transition-all";
           });
       }
-
-      // Auto Refresh riwayat setiap 3 detik
-      function refreshRiwayat() {
-        // Memuat ulang hanya bagian log-list saja
-        $("#log-list").load(window.location.href + " #log-list");
-      }
-
-      setInterval(refreshRiwayat, 10000);
     </script>
   </body>
 </html>
